@@ -13,8 +13,8 @@ export default function Home() {
         alt="Pharm Banner"
         className="banner-img-in-page mx-auto"
       />
-      <div className="mx-auto bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl rounded-3xl p-8 md:p-12 max-w-xl w-full text-center text-white">
-        <div className="mt-8 flex flex-col sm:flex-row gap-4">
+      {/* <div className="mx-auto bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl rounded-3xl p-8 md:p-12 max-w-xl w-full text-center text-white">
+        <div className="mt-8 flex flex-col sm:flex-row gap-4"> */}
           {/* <Link
             href="/register"
             className="flex-1 bg-white text-indigo-600 font-semibold py-3 rounded-xl hover:bg-gray-100 transition"
@@ -24,12 +24,12 @@ export default function Home() {
 
           <Link
             href="/login"
-            className="flex-1 bg-green-500 border border-white/30 py-3 rounded-xl hover:bg-green-600 transition"
+            className="inline-block mx-auto mt-10 bg-green-500 border border-white/30 py-3 px-6 text-white font-semibold rounded-xl hover:bg-green-600 hover:text-black transition"
           >
             Click Here To Log In
           </Link>
-        </div>
-      </div>
+        {/* </div>
+      </div> */}
     </div>
   );
 }
