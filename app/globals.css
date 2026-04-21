@@ -1,26 +1,124 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 0;
+  margin: 0;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.container{
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.playwrite-hu {
+  font-family: "Playwrite HU", cursive;
+  font-optical-sizing: auto;
+  font-weight: normal;
+  font-style: normal;
+}
+
+.times-new-roman{
+  font-family: "Times New Roman", Times, serif;
+  font-weight: bold;
+}
+
+.banner-img {
+  width: 25%;
+  margin-bottom: 100px;
+}
+.banner-img-in-page {
+  width: 25%;
+}
+
+@media (max-width: 1175px) {
+  h1 {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (max-width: 900px) {
+  h1 {
+    font-size: 2rem;
+  }
+}
+/* @media (max-width: 895px) {
+  .pagination-div {
+    font-size: 0.6rem;
+  }
+  .pagination-div button {
+    padding: 5px;
+  }
+} */
+ @media (max-width: 768px) {
+ .banner-img {
+  width: 35%;
+  margin-bottom: 70px;
+}
+}
+@media (max-width: 636px) {
+  .reports-ul {
+    margin-top: 20px;
+  }
+}
+@media (max-width: 605px) {
+  h1 {
+    font-size: 1.6rem;
+  }
+}
+
+/* @media (max-width: 550px) {
+  .pagination-div {
+    flex-direction: column;
+    align-items: center;
+  }
+  .pagination-div button {
+    width: 30%;
+  }
+} */
+
+@media (max-width: 545px) {
+  .home-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  .home-buttons a {
+    margin: 0 auto 7px;
+  }
+}
+@media (max-width: 490px) {
+  h1 {
+    font-size: 1.3rem;
+  }
+  .login-form {
+    width: 85%;
+  }
+}
+@media (max-width: 460px) {
+  .in-report-back-btn {
+    display: block;
+    text-align: center;
+    width: 80%;
+    margin: 10px auto 0;
+  }
+}
+@media (max-width: 435px) {
+  .search-field {
+    width: 100%;
+  }
+}
+
+@media (max-width: 400px) {
+  h1 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 340px) {
+  h1 {
+    font-size: 1rem;
+  }
 }
