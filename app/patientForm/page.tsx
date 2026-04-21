@@ -78,16 +78,20 @@ export default function PatientForm() {
     //   alert(error.message || "Something went wrong");
     // },
     onError: (error: any) => {
-      const message =
-        error?.response?.errors?.[0]?.message ||
-        error?.graphQLErrors?.[0]?.message ||
-        error.message ||
-        "Error creating patient";
+      // const message =
+      //   error?.response?.errors?.[0]?.message ||
+      //   error?.graphQLErrors?.[0]?.message ||
+      //   error.message || error.response?.data?.message ||
+      //   "Error creating patient";
+
+      const message = error.message || "Error creating patient";
+     
       toast.error(message, {
-        duration: 3000,
+        duration: 10000,
         style: {
           padding: "4px",
           fontSize: "16px",
+          whiteSpace: "pre-line",
         },
       });
     },

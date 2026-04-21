@@ -1,8 +1,10 @@
 import { connectDB } from "@/app/lib/mongodb";
 import { PatientValidator } from "@/app/lib/validators/patient";
 import Patient from "@/app/models/Patient";
-import { sanitizeInput } from "@/app/lib/sanitizer/sanitize";
+//import { sanitizeInput } from "@/app/lib/sanitizer/sanitize";
 import { sanitizeObject } from "@/app/lib/sanitizer/sanitize";
+import { ZodError } from "zod";
+import { GraphQLError } from "graphql";
 
 type GraphQLContext = {
   user: any;
@@ -43,8 +45,13 @@ export const patientResolvers = {
 
   Mutation: {
     createPatient: async (_: any, { input }: any, ctx: GraphQLContext) => {
+      // if (!ctx.user) {
+      //   throw new Error("Unauthorized");
+      // }
       if (!ctx.user) {
-        throw new Error("Unauthorized");
+        throw new GraphQLError("Unauthorized", {
+          extensions: { code: "UNAUTHORIZED" },
+        });
       }
       try {
         await connectDB();
@@ -75,29 +82,75 @@ export const patientResolvers = {
           birthday: sanitizedData.birthday,
         });
 
+        // if (existingPatient) {
+        //   throw new Error("Patient already exists");
+        // }
+
         if (existingPatient) {
-          throw new Error("Patient already exists");
+          throw new GraphQLError("Patient already exists", {
+            extensions: { code: "BAD_USER_INPUT" },
+          });
         }
 
         const newPatient = await Patient.create(sanitizedData);
 
         if (!newPatient) {
-          throw new Error("Adding new patient failed");
+          throw new GraphQLError("Adding new patient failed", {
+            extensions: { code: "INTERNAL_SERVER_ERROR" },
+          });
         }
 
         return newPatient;
       } catch (error: any) {
-        if (error.code === 11000) {
-          throw new Error("Patient already exists");
-        }
         console.error("CREATE PATIENT ERROR:", error);
+        if (error.code === 11000) {
+          throw new GraphQLError("Patient already exists", {
+            extensions: { code: "BAD_USER_INPUT" },
+          });
+        }
 
         // Handle Zod errors cleanly
-        if (error.name === "ZodError") {
-          throw new Error(error.errors.map((e: any) => e.message).join(", "));
+        // if (error.name === "ZodError") {
+        //   throw new Error(error.errors.map((e: any) => e.message).join(", "));
+        // }
+
+        // if (error instanceof ZodError) {
+        //   // throw new GraphQLError(error.issues.map((e) => e.message).join(", "), {
+        //   //   extensions: { code: "BAD_USER_INPUT" },
+        //   // });
+        //   const message = error.issues.map((e) => `• ${e.message}`).join("\n");
+        //   throw new GraphQLError(
+        //     message,
+        //     {
+        //       extensions: {
+        //         code: "BAD_USER_INPUT",
+        //       },
+        //     },
+        //   );
+        // }
+
+        if (error instanceof ZodError) {
+          const message = error.issues.map((e) => e.message).join("\n");
+
+          throw new GraphQLError(message, {
+            extensions: { code: "BAD_USER_INPUT" },
+          });
         }
 
-        throw new Error(error.message || "Server error while adding patient");
+        if (error instanceof GraphQLError) {
+          throw error;
+        }
+
+        // throw new Error(error.message || "Server error while adding patient");
+        // throw new GraphQLError(error.issues.map((e) => e.message).join(", "), {
+        //   extensions: {
+        //     code: "BAD_USER_INPUT",
+        //   },
+        // });
+
+        throw new GraphQLError(error.message || "Server error", {
+          extensions: { code: "INTERNAL_SERVER_ERROR" },
+        });
       }
     },
 

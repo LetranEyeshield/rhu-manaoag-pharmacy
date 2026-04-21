@@ -13,8 +13,12 @@ export function sanitizeObject(obj: any): any {
     return sanitizeInput(obj);
   }
 
+  // if (Array.isArray(obj)) {
+  //   return obj.map(sanitizeObject);
+  // }
+
   if (Array.isArray(obj)) {
-    return obj.map(sanitizeObject);
+    return obj.map((item) => sanitizeInput(item));
   }
 
   if (obj !== null && typeof obj === "object") {
