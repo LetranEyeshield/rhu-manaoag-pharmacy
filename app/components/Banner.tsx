@@ -10,7 +10,7 @@ export default function Banner() {
       <img
         // src="/images/pharm-banner.jpg"
         // src="/images/the-best-rhu-friends.jpg"
-         src="/images/logo.jpg"
+         src="/images/logo-pharma.png"
         alt="Pharm Banner"
         className="banner-img mx-auto"
       />

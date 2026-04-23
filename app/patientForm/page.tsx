@@ -162,11 +162,11 @@ export default function PatientForm() {
   return (
     <div className="patient-form-div w-full pb-10">
       <Banner />
-      <div className="p-4 max-w-lg mx-auto border rounded shadow bg-green-50 mt-8">
-        <h2 className="font-bold text-xl sm:text-3xl mx-auto text-center mb-8">
+      <div className="p-4 mx-auto border rounded shadow bg-green-50 mt-8 w-9/12">
+        <h2 className="font-bold text-xl sm:text-3xl mx-auto text-center mb-12 mt-6">
           ADD NEW PATIENT
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
+        <form onSubmit={handleSubmit} className="mx-auto bg-white p-10 w-8/12">
           <input
             type="text"
             name="firstName"
@@ -174,7 +174,7 @@ export default function PatientForm() {
             onChange={handleChange}
             placeholder="First Name"
             required
-            className="border p-2 w-full"
+            className="border p-2 w-full mb-6"
           />
 
           <input
@@ -183,7 +183,7 @@ export default function PatientForm() {
             value={form.middleName || ""}
             onChange={handleChange}
             placeholder="Middle Name (optional)"
-            className="border p-2 w-full"
+            className="border p-2 w-full mb-6"
           />
 
           <input
@@ -193,7 +193,7 @@ export default function PatientForm() {
             onChange={handleChange}
             placeholder="Last Name"
             required
-            className="border p-2 w-full"
+            className="border p-2 w-full mb-6"
           />
 
           <input
@@ -202,7 +202,7 @@ export default function PatientForm() {
             value={form.birthday}
             onChange={handleChange}
             required
-            className="border p-2 w-full"
+            className="border p-2 w-full mb-6"
           />
 
           <input
@@ -211,7 +211,7 @@ export default function PatientForm() {
             value={form.age || "0"}
             readOnly
             placeholder="Age"
-            className="border p-2 w-full bg-gray-100 cursor-not-allowed"
+            className="border p-2 w-full bg-gray-100 cursor-not-allowed mb-6"
           />
 
           <select
@@ -219,7 +219,7 @@ export default function PatientForm() {
             value={form.address}
             onChange={handleChange}
             required
-            className="border p-2 w-full"
+            className="border p-2 w-full mb-6"
           >
             <option value="">Select Address</option>
             {addressList.map((address) => (
@@ -247,7 +247,7 @@ export default function PatientForm() {
 
           <button
             type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer mr-6"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer mr-6 mt-6"
           >
             {createMutation.isPending ? "Saving Patient..." : "Save Patient"}
           </button>

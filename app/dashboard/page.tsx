@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Banner from "../components/Banner";
 import LogoutButton from "../components/Logout";
-// import PatientList from "./components/PatientList";
+import Patient from "../components/Patient";
 
 export default function Dashboard() {
 
@@ -43,7 +43,7 @@ export default function Dashboard() {
           </Link>
           <LogoutButton />
         </div>
-        {/* <PatientList /> */}
+        <Patient />
       </main>
     </div>
   );

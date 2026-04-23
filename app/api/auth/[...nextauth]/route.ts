@@ -39,10 +39,10 @@ const handler = NextAuth({
   },
   session: {
     strategy: "jwt",
-    maxAge: 2 * 60 * 60, // 2 hours (in seconds)
+    //maxAge: 2 * 60 * 60, // 2 hours (in seconds)
   },
   jwt: {
-  maxAge: 2 * 60 * 60, // 2 hours
+ //maxAge: 2 * 60 * 60, // 2 hours
 },
   pages: {
     signIn: "/login", // optional: your custom login page
