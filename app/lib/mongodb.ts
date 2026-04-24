@@ -37,5 +37,6 @@ export async function connectDB(): Promise<Mongoose> {
   }
 
   cached.conn = await cached.promise;
+  console.log("Mongodb Atlas Connected!");
   return cached.conn;
 }

@@ -1,5 +1,6 @@
 // new code with text index for better search performance
-import mongoose, { Schema, model, models } from "mongoose";
+import mongoose, { Schema, Model } from "mongoose";
+import { PatientType } from "../types/Patient";
 
 const PatientSchema = new Schema(
   {
@@ -33,5 +34,5 @@ PatientSchema.index(
   },
 );
 
-const Patient = models.Patient || model("Patient", PatientSchema);
-export default Patient;
+export const Patient: Model<PatientType> =
+  mongoose.models.Patient || mongoose.model<PatientType>("Patient", PatientSchema);

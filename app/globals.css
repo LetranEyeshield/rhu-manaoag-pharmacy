@@ -25,11 +25,10 @@ body {
 }
 
 .banner-img {
-  width: 25%;
-  margin-bottom: 100px;
+  width: 20%;
 }
 .banner-img-in-page {
-  width: 25%;
+  width: 20%;
 }
 
 @media (max-width: 1175px) {

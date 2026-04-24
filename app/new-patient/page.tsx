@@ -5,10 +5,9 @@ import { useState } from "react";
 import { addressList, medicinesList } from "../constants/lists";
 import Banner from "../components/Banner";
 import toast from "react-hot-toast";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "@/app/lib/graphql-client";
 import { PatientType } from "../types/Patient";
-import { truncate } from "node:fs";
 
 export default function PatientForm() {
   const [form, setForm] = useState<PatientType>({
@@ -22,6 +21,8 @@ export default function PatientForm() {
   });
 
   const [loading, setLoading] = useState(false);
+
+  const queryClient = useQueryClient();
 
   //   const queryClient = useQueryClient();
 
@@ -63,7 +64,7 @@ export default function PatientForm() {
       ),
 
     onSuccess: () => {
-      //queryClient.invalidateQueries({ queryKey: ["patients"] });
+      queryClient.invalidateQueries({ queryKey: ["patients"] });
       toast.success("New Patient Added Successfully", {
         duration: 3000,
         style: {
@@ -85,7 +86,7 @@ export default function PatientForm() {
       //   "Error creating patient";
 
       const message = error.message || "Error creating patient";
-     
+
       toast.error(message, {
         duration: 10000,
         style: {
@@ -258,7 +259,7 @@ export default function PatientForm() {
                 ? "bg-green-300 text-white px-4 py-3 rounded cursor-not-allowed"
                 : "bg-green-500 text-white px-4 py-3 rounded hover:bg-green-700 cursor-pointer"
             }
-            onClick={()=>setLoading(true)}
+            onClick={() => setLoading(true)}
           >
             {loading ? "Going Back..." : "Go Back"}
           </Link>

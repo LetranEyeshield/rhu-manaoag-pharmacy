@@ -112,7 +112,7 @@ export default function EditPatientPage() {
       //   "Error updating patient";
       const message = error.message || "Error updating patient";
       toast.error(message, {
-        duration: 3000,
+        duration: 10000,
         style: {
           padding: "4px",
           fontSize: "16px",

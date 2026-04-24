@@ -66,6 +66,7 @@ export default function Patients() {
 
   const patients = data?.patients?.patients ?? [];
   const totalPages = data?.patients?.totalPages ?? 1;
+  const totalCount = data?.patients?.totalCount ?? 0;
 
   const handleDelete = (patient: any) => {
     const confirmDelete = window.confirm(
@@ -148,16 +149,19 @@ export default function Patients() {
             Patients
           </h1>
 
-          <input
-            placeholder="Search Patient..."
-            className="border rounded-lg px-4 py-2 w-full md:w-64"
-            value={search}
-            onChange={(e) => {
-              setPage(1);
-              setSearch(e.target.value);
-              debouncedSetSearch(e.target.value);
-            }}
-          />
+          <div className="flex justify-between">
+            <input
+              placeholder="Search Patient..."
+              className="border rounded-lg px-4 py-2 w-full md:w-64"
+              value={search}
+              onChange={(e) => {
+                setPage(1);
+                setSearch(e.target.value);
+                debouncedSetSearch(e.target.value);
+              }}
+            />
+           <h2 className="3xl font-bold">Total Patients: {totalCount}</h2>
+          </div>
         </div>
 
         {/* LIST */}

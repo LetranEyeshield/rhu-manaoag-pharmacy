@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -11,17 +11,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-
+  const hasShownToast = useRef(false);
   useEffect(() => {
-    toast("You can use admin in username and password for testing!", {
-      duration: 3000,
-      style: {
-        background: "lightgreen",
-        //color: "white", // white text
-        //fontFamily: "Arial, sans-serif",
-        fontSize: "21px",
-      },
-    });
+    if (!hasShownToast.current) {
+      toast("You can use admin in username and password for testing!", {
+        duration: 5000,
+        style: {
+          background: "lightgreen",
+          fontSize: "21px",
+        },
+      });
+      hasShownToast.current = true;
+    }
   }, []);
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
@@ -47,7 +48,7 @@ export default function LoginPage() {
     } else {
       //alert("Invalid credentials");
       toast("Invalid Credentials!", {
-        duration: 3000,
+        duration: 5000,
         style: {
           background: "red",
           color: "white", // white text
@@ -89,7 +90,7 @@ export default function LoginPage() {
         <button
           type="submit"
           className="w-full bg-green-500 text-white p-2 hover:bg-green-300"
-          onClick={()=>setLoading(true)}
+          onClick={() => setLoading(true)}
         >
           {loading ? "Logging in..." : "Login"}
         </button>
