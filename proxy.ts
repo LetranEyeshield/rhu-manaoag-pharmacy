@@ -11,10 +11,10 @@ export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const isAuthPage =
-    req.nextUrl.pathname.startsWith("/login") ||
-    req.nextUrl.pathname.startsWith("/register");
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register");
 
-     const isProtected =
+  const isProtected =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/patients") ||
     pathname.startsWith("/maintenance") ||
@@ -26,14 +26,17 @@ export async function proxy(req: NextRequest) {
     pathname.startsWith("/vitaminsForm") ||
     pathname.startsWith("/reports");
 
+  // ❌ Not logged in → block protected
   if (!token && isProtected) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  // if (!token && req.nextUrl.pathname.startsWith("/dashboard")) {
-  //   return NextResponse.redirect(new URL("/", req.url));
-  // }
+  // ✅ Logged in → redirect homepage to dashboard
+  if (token && pathname === "/") {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
 
+  // ✅ Logged in → block login/register
   if (token && isAuthPage) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
@@ -42,16 +45,17 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
- matcher: [
+  matcher: [
+    "/", // 👈 important
     "/dashboard/:path*",
     "/patients/:path*",
     "/maintenance/:path*",
     "/medscard/:path*",
     "/vitamins/:path*",
-    "/patientForm/:path*",
-    "/maintenanceForm/:path*",
-    "/medscardForm/:path*",
-    "/vitaminsForm/:path*",
+    "/new-patient/:path*",
+    "/new-maintenance/:path*",
+    "/new-medscard/:path*",
+    "/new-vitamins/:path*",
     "/reports/:path*",
   ],
 };

@@ -1,7 +1,7 @@
 // new code with text index for better search performance
 import mongoose, { Model, Schema, Document } from "mongoose";
 
-export interface IMedscard extends Document{
+export interface IMaintenance extends Document{
   cardName: string;
   cardDate: Date;
   initialStock?: string;
@@ -14,7 +14,7 @@ export interface IMedscard extends Document{
   balance?: string;
 }
 
-const MedscardSchema = new Schema<IMedscard>({
+const MaintenanceSchema = new Schema<IMaintenance>({
   cardName: { type: String, required: true, trim: true },
   cardDate: { type: Date, required: true },
   initialStock: { type: String },
@@ -27,8 +27,8 @@ const MedscardSchema = new Schema<IMedscard>({
   balance: { type: String },
 });
 
-MedscardSchema.index({ cardName: "text" });
+MaintenanceSchema.index({ cardName: "text" });
 
 
-export const Medscard: Model<IMedscard> =
-  mongoose.models.Medscards || mongoose.model<IMedscard>("Medscards", MedscardSchema);
+export const Maintenance: Model<IMaintenance> =
+  mongoose.models.Maintenance || mongoose.model<IMaintenance>("Maintenancecards", MaintenanceSchema);

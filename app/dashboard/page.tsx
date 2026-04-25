@@ -4,12 +4,13 @@ import Banner from "../components/Banner";
 import LogoutButton from "../components/Logout";
 import Patient from "../components/Patient";
 
-export default function Dashboard() {
 
+export default function Dashboard() {
   return (
     <div className="w-full">
       <main className="container flex flex-col ">
         <Banner />
+      
         <div className="home-buttons w-full flex justify-center py-8">
           <Link
             href={"/new-patient"}
@@ -18,7 +19,7 @@ export default function Dashboard() {
             Add New Patient
           </Link>
           <Link
-            href={"/reports"}
+            href={"/dashboard/reports"}
             className="reports-btn bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 mr-8"
           >
             Reports
@@ -30,13 +31,13 @@ export default function Dashboard() {
             Meds Card
           </Link>
           <Link
-            href={"/maintenance"}
+            href={"/dashboard/maintenance"}
             className="reports-btn bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 mr-8"
           >
             Maintenance Card
           </Link>
           <Link
-            href={"/vitamins"}
+            href={"/dashboard/vitamins"}
             className="reports-btn bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 mr-8"
           >
             Vitamins Card

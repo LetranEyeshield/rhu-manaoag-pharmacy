@@ -1,4 +1,4 @@
-export type MedscardType = {
+export type MaintenanceType = {
   cardName: string;
   cardDate: string;
   initialStock?: string;

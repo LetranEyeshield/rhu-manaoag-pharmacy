@@ -28,11 +28,6 @@ export const typeDefs = /* GraphQL */ `
     medicines: [String!]!
   }
 
-  type Query {
-    patients(page: Int!, limit: Int!, search: String): PatientPagination!
-    patient(id: ID!): Patient
-  }
-
   type Medscard {
     _id: ID!
     cardName: String!
@@ -66,9 +61,52 @@ export const typeDefs = /* GraphQL */ `
     balance: String
   }
 
+  type Maintenancecard {
+    _id: ID!
+    cardName: String!
+    cardDate: String!
+    initialStock: String
+    qtyIn: String
+    lotNoIn: String
+    expiryIn: String
+    qtyOut: String
+    lotNoOut: String
+    expiryOut: String
+    balance: String
+  }
+
+  type MaintenancePagination {
+    maintenancecards: [Maintenancecard]
+    totalCount: Int!
+    totalPages: Int!
+  }
+
+  input MaintenancecardInput {
+    cardName: String!
+    cardDate: String!
+    initialStock: String
+    qtyIn: String
+    lotNoIn: String
+    expiryIn: String
+    qtyOut: String
+    lotNoOut: String
+    expiryOut: String
+    balance: String
+  }
+
   type Query {
+    patients(page: Int!, limit: Int!, search: String): PatientPagination!
+    patient(id: ID!): Patient
+
     medscards(page: Int!, limit: Int!, search: String): MedscardPagination
     medscard(id: ID!): Medscard
+
+    maintenancecards(
+      page: Int!
+      limit: Int!
+      search: String
+    ): MaintenancePagination
+    maintenancecard(id: ID!): Maintenancecard
   }
 
   type Mutation {
@@ -79,5 +117,9 @@ export const typeDefs = /* GraphQL */ `
     createMedscard(input: MedscardInput): Medscard
     updateMedscard(id: ID!, input: MedscardInput): Medscard
     deleteMedscard(id: ID!): Boolean!
+
+    createMaintenancecard(input: MaintenancecardInput): Maintenancecard
+    updateMaintenancecard(id: ID!, input: MaintenancecardInput): Maintenancecard
+    deleteMaintenancecard(id: ID!): Boolean!
   }
 `;

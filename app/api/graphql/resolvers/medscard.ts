@@ -130,7 +130,7 @@ export const medscardResolvers = {
         return true;
       } catch (error: any) {
         console.error("DELETE MEDS CARD ERROR:", error);
-        throw new Error(error.message || "Server error while deleting patient");
+        throw new Error(error.message || "Server error while deleting meds card");
       }
     },
   },

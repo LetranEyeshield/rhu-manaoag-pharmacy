@@ -1,16 +1,20 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
-import { medsCardList } from "../constants/lists";
-import Banner from "../components/Banner";
-import toast from "react-hot-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "@/app/lib/graphql-client";
-import { MedscardType } from "../types/Medscard";
-import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { MedscardType } from "@/app/types/Medscard";
+import Banner from "@/app/components/Banner";
+import Link from "next/link";
+import { medsCardList } from "@/app/constants/lists";
 
-export default function MedscardForm() {
+export default function EditMedscardPage() {
+  const { id } = useParams();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
   const [form, setForm] = useState<MedscardType>({
     cardName: "",
     cardDate: "",
@@ -24,20 +28,17 @@ export default function MedscardForm() {
     balance: "",
   });
 
-   const router = useRouter();
-
   const [loading, setLoading] = useState(false);
 
-  const queryClient = useQueryClient();
-
-  // ================= MUTATION =================
-  const createMutation = useMutation({
-    mutationFn: (input: MedscardType) =>
+  // ================= FETCH SINGLE =================
+  const { data, isLoading } = useQuery({
+    queryKey: ["medscard", id],
+    queryFn: () =>
       graphqlRequest(
         `
-      mutation CreateMedscard($input:MedscardInput!){
-        createMedscard(input:$input){
-          _id
+        query Medscard($id:ID!){
+          medscard(id:$id){
+            _id
           cardName
           cardDate
           initialStock
@@ -48,45 +49,77 @@ export default function MedscardForm() {
           lotNoOut
           expiryOut
           balance
+          }
         }
-      }
       `,
-        { input },
+        { id },
+      ),
+    enabled: !!id,
+  });
+
+  // PREFILL FORM
+  useEffect(() => {
+    if (data?.medscard) {
+      setForm({
+        cardName: data.medscard.cardName,
+        cardDate: data.medscard.cardDate,
+        initialStock: data.medscard.initialStock,
+        qtyIn: data.medscard.qtyIn,
+        lotNoIn: data.medscard.lotNoIn,
+        expiryIn: data.medscard.expiryIn,
+        qtyOut: data.medscard.qtyOut,
+        lotNoOut: data.medscard.lotNoOut,
+        expiryOut: data.medscard.expiryOut,
+        balance: data.medscard.balance,
+      });
+    }
+  }, [data]);
+
+  // ================= UPDATE =================
+  const updateMutation = useMutation({
+    mutationFn: (input: MedscardType) =>
+      graphqlRequest(
+        `
+        mutation UpdateMedscard($id:ID!, $input:MedscardInput!){
+          updateMedscard(id:$id, input:$input){
+            _id
+          }
+        }
+      `,
+        { id, input },
       ),
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["medscards"] });
-      toast.success("New Meds Card Added Successfully", {
+      queryClient.invalidateQueries({ queryKey: ["medscard", id] });
+
+      toast.success("Updated Successfully", {
         duration: 3000,
         style: {
           padding: "4px",
           fontSize: "16px",
         },
       });
+      queryClient.setQueryData(["medscard", id], (old: any) => ({
+        ...old,
+        medscard: { ...old.medscard, ...form },
+      }));
        router.push("/dashboard/medscard");
     },
 
     onError: (error: any) => {
-      const message = error.message || "Error creating meds card";
-
+      const message = error.message || "Error updating meds card!";
       toast.error(message, {
         duration: 10000,
         style: {
           padding: "4px",
           fontSize: "16px",
-          whiteSpace: "pre-line",
         },
       });
     },
   });
 
-  // ================= HANDLE SUBMIT =================
-  const handleSubmit = (e: React.SubmitEvent) => {
-    e.preventDefault();
-
-    createMutation.mutate(form);
-  };
-
+  // ================= HANDLE CHANGE =================
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -97,6 +130,14 @@ export default function MedscardForm() {
     }));
   };
 
+  const handleSubmit = (e: React.SubmitEvent) => {
+    e.preventDefault();
+
+    updateMutation.mutate(form);
+  };
+
+  if (isLoading) return <div className="p-6">Loading...</div>;
+
   return (
     <div className="patient-form-div w-full pb-10">
       <Banner />
@@ -106,7 +147,7 @@ export default function MedscardForm() {
           className="w-9/12 mx-auto p-10 bg-white border rounded shadow mt-10"
         >
           <h2 className="font-bold text-xl sm:text-3xl mx-auto text-center mb-8">
-            ADD CARD RECORD
+            EDIT MEDS CARD
           </h2>
           <select
             name="cardName"
@@ -135,13 +176,15 @@ export default function MedscardForm() {
                 cardDate: new Date(e.target.value), // parse back to Date
               }))
             }
+            // value={form.cardDate}
+            //onChange={handleChange}
             required
             className="border p-2 w-full"
           /> */}
           <input
             type="date"
             name="cardDate"
-            value={form.cardDate}
+            value={form.cardDate.toString()}
             onChange={handleChange}
             required
             className="border p-2 w-full"
@@ -235,12 +278,12 @@ export default function MedscardForm() {
             type="submit"
             className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-800 cursor-pointer mr-6"
           >
-            {createMutation.isPending ? "Saving Card..." : "Save Card"}
+            {updateMutation.isPending ? "Updating Card..." : "Update Card"}
           </button>
           <Link
             href={"/dashboard/medscard"}
-            className="back-btn mt-4 bg-green-500 text-white px-4 py-3 rounded hover:bg-green-700 cursor-pointer"
             onClick={() => setLoading(true)}
+            className="back-btn mt-4 bg-green-500 text-white px-4 py-3 rounded hover:bg-green-700 cursor-pointer"
           >
             {loading ? "Going Back..." : "Go Back"}
           </Link>

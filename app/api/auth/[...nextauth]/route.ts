@@ -26,7 +26,7 @@ export const authOptions: NextAuthOptions = {
 
         const isPasswordCorrect = await bcrypt.compare(
           credentials!.password,
-          user.password
+          user.password,
         );
 
         if (!isPasswordCorrect) return null;
@@ -41,7 +41,6 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
-      // ✅ Save user id into token on login
       if (user) {
         token.id = user.id;
       }
@@ -49,7 +48,6 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
-      // ✅ Attach token.id to session.user
       if (session.user) {
         session.user.id = token.id as string;
       }
@@ -59,6 +57,11 @@ export const authOptions: NextAuthOptions = {
 
   session: {
     strategy: "jwt",
+    // maxAge: 60 * 60,
+    // updateAge: 15 * 60,
+  },
+  jwt: {
+    // maxAge: 60 * 60,
   },
 
   pages: {

@@ -200,7 +200,6 @@ export default function EditPatientPage() {
                 name="middleName"
                 value={form.middleName || ""}
                 onChange={handleChange}
-                required
                 className="mt-1 w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-400 focus:outline-none"
               />
             </div>
@@ -286,19 +285,18 @@ export default function EditPatientPage() {
           {/* ACTION BUTTONS */}
           <div className="flex justify-end gap-3 pt-4">
             <button
-              type="button"
-              onClick={() => router.back()}
-              className="px-4 py-2 border rounded-lg hover:bg-gray-100 cursor-pointer"
-            >
-              Cancel
-            </button>
-
-            <button
               type="submit"
               disabled={updateMutation.isPending}
               className="px-5 py-2 rounded-lg bg-cyan-600 text-white hover:bg-cyan-700 disabled:opacity-50 cursor-pointer"
             >
               {updateMutation.isPending ? "Saving..." : "Update Patient"}
+            </button>
+             <button
+              type="button"
+              onClick={() => router.back()}
+              className="px-4 py-2 border rounded-lg hover:bg-gray-100 cursor-pointer"
+            >
+              Cancel
             </button>
           </div>
         </form>

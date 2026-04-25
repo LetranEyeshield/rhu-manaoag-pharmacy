@@ -1,7 +1,12 @@
-import mongoose, { Model } from "mongoose";
-import { UserType } from "../types/User";
+import mongoose, { Model, Schema, Document } from "mongoose";
 
-const UserSchema = new mongoose.Schema(
+
+export interface IUser extends Document {
+  username: string;
+  password: string;
+}
+
+const UserSchema = new mongoose.Schema<IUser>(
   {
     username: { type: String, required: true },
     password: { type: String, required: true },
@@ -9,5 +14,5 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const User: Model<UserType> =
-  mongoose.models.User || mongoose.model<UserType>("User", UserSchema);
+export const User: Model<IUser> =
+  mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
