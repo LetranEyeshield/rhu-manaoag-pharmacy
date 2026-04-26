@@ -106,11 +106,12 @@ export const patientResolvers = {
       // if (!ctx.user) {
       //   throw new Error("Unauthorized");
       // }
-      if (!ctx.user) {
-        throw new GraphQLError("Unauthorized", {
-          extensions: { code: "UNAUTHORIZED" },
-        });
-      }
+      // if (!ctx.user) {
+      //   throw new GraphQLError("Unauthorized", {
+      //     extensions: { code: "UNAUTHORIZED" },
+      //   });
+      // }
+      console.log("CTX USER:", ctx.user);
       try {
         await connectDB();
 
@@ -213,9 +214,10 @@ export const patientResolvers = {
     },
 
     updatePatient: async (_: any, { id, input }: any, ctx: GraphQLContext) => {
-      if (!ctx.user) {
-        throw new Error("Unauthorized");
-      }
+      // if (!ctx.user) {
+      //   throw new Error("Unauthorized");
+      // }
+      console.log("CTX USER:", ctx.user);
       try {
         await connectDB();
 
