@@ -128,7 +128,12 @@ export const typeDefs = /* GraphQL */ `
   }
 
   type Query {
-    patients(page: Int!, limit: Int!, search: String): PatientPagination!
+    patients(
+      page: Int!
+      limit: Int!
+      search: String
+      address: String
+    ): PatientPagination!
     patient(id: ID!): Patient
 
     medscards(page: Int!, limit: Int!, search: String): MedscardPagination
@@ -141,7 +146,7 @@ export const typeDefs = /* GraphQL */ `
     ): MaintenancecardPagination
     maintenancecard(id: ID!): Maintenancecard
 
-     vitaminscards(
+    vitaminscards(
       page: Int!
       limit: Int!
       search: String

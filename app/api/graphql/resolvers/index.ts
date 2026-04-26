@@ -1,7 +1,6 @@
 import { maintenancecardResolvers } from "./maintenancecard";
 import { medscardResolvers } from "./medscard";
 import { patientResolvers } from "./patient";
-import { reportResolvers } from "./report";
 import { vitaminscardResolvers } from "./vitaminscard";
 
 export const resolvers = {
@@ -10,7 +9,6 @@ export const resolvers = {
     ...medscardResolvers.Query,
     ...maintenancecardResolvers.Query,
     ...vitaminscardResolvers.Query,
-    ...reportResolvers.Query,
   },
   Mutation: {
     ...patientResolvers.Mutation,

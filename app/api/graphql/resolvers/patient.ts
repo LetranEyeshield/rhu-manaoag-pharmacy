@@ -1,6 +1,6 @@
 import { connectDB } from "@/app/lib/mongodb";
 import { PatientValidator } from "@/app/lib/validators/patient";
-import {Patient} from "@/app/models/Patient";
+import { Patient } from "@/app/models/Patient";
 //import { sanitizeInput } from "@/app/lib/sanitizer/sanitize";
 import { sanitizeObject } from "@/app/lib/sanitizer/sanitize";
 import { ZodError } from "zod";
@@ -12,7 +12,7 @@ type GraphQLContext = {
 
 export const patientResolvers = {
   Query: {
-    patients: async (_: any, { page, limit, search }: any) => {
+    patients: async (_: any, { page, limit, search, address }: any) => {
       await connectDB();
 
       const skip = (page - 1) * limit;
@@ -30,16 +30,32 @@ export const patientResolvers = {
       //         }
       //     : {};
 
-      const filter =
-        search && search.trim() !== ""
-          ? {
-              $or: [
-                { firstName: { $regex: search, $options: "i" } },
-                { middleName: { $regex: search, $options: "i" } },
-                { lastName: { $regex: search, $options: "i" } },
-              ],
-            }
-          : {};
+      // const filter =
+      //   search && search.trim() !== ""
+      //     ? {
+      //         $or: [
+      //           { firstName: { $regex: search, $options: "i" } },
+      //           { middleName: { $regex: search, $options: "i" } },
+      //           { lastName: { $regex: search, $options: "i" } },
+      //         ],
+      //       }
+      //     : {};
+
+      let filter: any = {};
+
+      // 🔍 Name search
+      if (search && search.trim() !== "") {
+        filter.$or = [
+          { firstName: { $regex: search, $options: "i" } },
+          { middleName: { $regex: search, $options: "i" } },
+          { lastName: { $regex: search, $options: "i" } },
+        ];
+      }
+
+      // 📍 Address filter
+      if (address && address.trim() !== "") {
+        filter.address = address;
+      }
 
       console.log("FILTER:", filter);
       console.log("SEARCH:", search);
@@ -236,7 +252,7 @@ export const patientResolvers = {
 
         // throw new Error(error.message || "Server error while updating patient");
 
-         if (error instanceof ZodError) {
+        if (error instanceof ZodError) {
           const message = error.issues.map((e) => e.message).join("\n");
 
           throw new GraphQLError(message, {
@@ -258,7 +274,6 @@ export const patientResolvers = {
         throw new GraphQLError(error.message || "Server error", {
           extensions: { code: "INTERNAL_SERVER_ERROR" },
         });
-
       }
     },
 
