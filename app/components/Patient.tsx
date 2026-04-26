@@ -190,8 +190,8 @@ export default function Patients() {
                       day: "numeric",
                     })
                   : "N/A"} */}
-                {/* {formatBirthday(patient.birthday)} */}
-                {patient.birthday}
+                {formatBirthday(patient.birthday)}
+                {/* {patient.birthday} */}
               </p>
 
               <p className="text-sm text-gray-600">
