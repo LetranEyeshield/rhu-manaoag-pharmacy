@@ -198,7 +198,7 @@ export const medsCardList: string[] = [
   "TETANUS TOXID AMP",
 ];
 
-export const vitsCardList: string[] = [
+export const vitaminsCardList: string[] = [
   "ASCORBIC ACID 500MG",
   "ASCORBIC ACID DROPS",
   "ASCORBIC ACID SYRUP",

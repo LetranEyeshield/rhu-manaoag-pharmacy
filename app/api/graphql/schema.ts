@@ -75,13 +75,46 @@ export const typeDefs = /* GraphQL */ `
     balance: String
   }
 
-  type MaintenancePagination {
+  type MaintenancecardPagination {
     maintenancecards: [Maintenancecard]
     totalCount: Int!
     totalPages: Int!
   }
 
   input MaintenancecardInput {
+    cardName: String!
+    cardDate: String!
+    initialStock: String
+    qtyIn: String
+    lotNoIn: String
+    expiryIn: String
+    qtyOut: String
+    lotNoOut: String
+    expiryOut: String
+    balance: String
+  }
+
+  type Vitaminscard {
+    _id: ID!
+    cardName: String!
+    cardDate: String!
+    initialStock: String
+    qtyIn: String
+    lotNoIn: String
+    expiryIn: String
+    qtyOut: String
+    lotNoOut: String
+    expiryOut: String
+    balance: String
+  }
+
+  type VitaminscardPagination {
+    vitaminscards: [Vitaminscard]
+    totalCount: Int!
+    totalPages: Int!
+  }
+
+  input VitaminscardInput {
     cardName: String!
     cardDate: String!
     initialStock: String
@@ -105,8 +138,15 @@ export const typeDefs = /* GraphQL */ `
       page: Int!
       limit: Int!
       search: String
-    ): MaintenancePagination
+    ): MaintenancecardPagination
     maintenancecard(id: ID!): Maintenancecard
+
+     vitaminscards(
+      page: Int!
+      limit: Int!
+      search: String
+    ): VitaminscardPagination
+    vitaminscard(id: ID!): Vitaminscard
   }
 
   type Mutation {
@@ -121,5 +161,9 @@ export const typeDefs = /* GraphQL */ `
     createMaintenancecard(input: MaintenancecardInput): Maintenancecard
     updateMaintenancecard(id: ID!, input: MaintenancecardInput): Maintenancecard
     deleteMaintenancecard(id: ID!): Boolean!
+
+    createVitaminscard(input: VitaminscardInput): Vitaminscard
+    updateVitaminscard(id: ID!, input: VitaminscardInput): Vitaminscard
+    deleteVitaminscard(id: ID!): Boolean!
   }
 `;

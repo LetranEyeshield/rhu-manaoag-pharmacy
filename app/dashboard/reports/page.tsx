@@ -1,6 +1,283 @@
-'use client';
-export default function Reports(){
-    return (
-        <div>Reports</div>
+
+"use client";
+
+import { useState, useMemo } from "react";
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  ColumnDef,
+  getSortedRowModel,
+  SortingState,
+} from "@tanstack/react-table";
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { graphqlRequest } from "@/app/lib/graphql-client";
+import Link from "next/link";
+import toast from "react-hot-toast";
+import { addressList } from "@/app/constants/lists";
+import Banner from "@/app/components/Banner";
+import LogoutButton from "@/app/components/Logout";
+
+
+type Patient = {
+  _id: string;
+   firstName: string;
+  middleName?: string | null;
+  lastName: string;
+  birthday: string;
+  age?: number | null;
+  address: string;
+  medicines: string[];
+};
+
+export default function ReportsTable() {
+  const queryClient = useQueryClient();
+
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [sorting, setSorting] = useState<SortingState>([]);
+
+  const formatDate = (date: string | null | undefined) => {
+    if (!date) return "No date input";
+
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return "Invalid date";
+
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const fetchPatients = (page: number, search: string) =>
+    graphqlRequest(
+      `
+      query Patients($page:Int!, $limit:Int!, $search:String){
+        patients(page:$page, limit:$limit, search:$search){
+          patients{
+            _id
+            cardName
+            cardDate
+            initialStock
+            qtyIn
+            lotNoIn
+            expiryIn
+            qtyOut
+            lotNoOut
+            expiryOut
+            balance
+          }
+          totalCount
+          totalPages
+        }
+      }
+    `,
+      { page, limit: 10, search },
     );
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["patients", page, search],
+    queryFn: () => fetchPatients(page, search),
+    staleTime: 1000 * 60 * 2,
+  });
+
+  const patients = data?.patients?.patients ?? [];
+  const totalPages = data?.patients?.totalPages ?? 1;
+
+
+  // 🧠 TABLE COLUMNS
+  const columns = useMemo<ColumnDef<Patient>[]>(
+    () => [
+      {
+        accessorKey: "firstName",
+        header: "First Name",
+      },
+       {
+        accessorKey: "middleName",
+        header: "Middle Name",
+      },
+       {
+        accessorKey: "lastName",
+        header: "Last Name",
+      },
+      {
+        accessorKey: "birthday",
+        header: "Birth Date",
+        cell: ({ row }) => formatDate(row.original.birthday),
+      },
+      {
+        accessorKey: "age",
+        header: "Age",
+      },
+      {
+        accessorKey: "address",
+        header: "Address",
+      },
+       {
+        accessorKey: "medicines",
+        header: "Medicines",
+      },
+    ],
+    [],
+  );
+
+  const table = useReactTable({
+    data: patients,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
+
+  return (
+    <div className="w-full">
+      <Banner />
+
+      <div className="home-buttons w-full flex justify-center py-8">
+       
+        <Link
+          href="/dashboard/medscard"
+          className="bg-green-500 text-white px-4 py-2 rounded mr-8"
+        >
+          Meds Card
+        </Link>
+        <Link
+          href={"/dashboard/maintenance"}
+          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 mr-8"
+        >
+          Maintenance Card
+        </Link>
+        <Link
+          href={"/dashboard/vitamins"}
+          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 mr-8"
+        >
+          Vitamins Card
+        </Link>
+        <Link
+          href="/dashboard"
+          className="bg-green-500 text-white px-4 py-2 rounded mr-8"
+        >
+          Dashboard
+        </Link>
+        <LogoutButton />
+      </div>
+
+      <div className="w-11/12 mx-auto bg-green-50 p-10">
+        <h1 className="text-4xl text-center font-bold mb-6">Meds Cards</h1>
+
+        {/* FILTER */}
+        <select
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+          className="border p-2 mb-4"
+        >
+          <option value="">All</option>
+          {addressList.map((name) => (
+            <option key={name}>{name}</option>
+          ))}
+        </select>
+
+        {/* TABLE */}
+        <div className="overflow-x-auto">
+          <table className="w-full border">
+            <thead className="bg-green-100">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      className="p-2 border cursor-pointer"
+                      onClick={header.column.getToggleSortingHandler()}
+                    >
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+
+            <tbody>
+              {isLoading && (
+                <tr>
+                  <td colSpan={10} className="text-center p-4">
+                    Loading...
+                  </td>
+                </tr>
+              )}
+
+              {!isLoading &&
+                table.getRowModel().rows.map((row) => (
+                  <tr key={row.id} className="hover:bg-gray-50">
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="p-2 border">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+
+              {!isLoading && patients.length === 0 && (
+                <tr>
+                  <td colSpan={10} className="text-center p-4">
+                    No data found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* PAGINATION */}
+        <div className="flex justify-center gap-2 mt-6">
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-80 disabled:cursor-not-allowed"
+            disabled={page === 1}
+            onClick={() => setPage(1)}
+          >
+            First
+          </button>
+
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-80 disabled:cursor-not-allowed"
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            Prev
+          </button>
+
+          <span>
+            Page {page} / {totalPages}
+          </span>
+
+          <button
+            disabled={page === totalPages}
+            className="px-3 py-1 border rounded disabled:opacity-80 disabled:cursor-not-allowed"
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Next
+          </button>
+
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-80 disabled:cursor-not-allowed"
+            disabled={page === totalPages}
+            onClick={() => setPage(totalPages)}
+          >
+            Last
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }

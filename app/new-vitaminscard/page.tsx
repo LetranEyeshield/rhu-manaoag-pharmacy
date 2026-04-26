@@ -1,21 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { graphqlRequest } from "@/app/lib/graphql-client";
-import toast from "react-hot-toast";
-import { MedscardType } from "@/app/types/Medscard";
-import Banner from "@/app/components/Banner";
 import Link from "next/link";
-import { medsCardList } from "@/app/constants/lists";
+import { useState } from "react";
+import { vitaminsCardList } from "../constants/lists";
+import Banner from "../components/Banner";
+import toast from "react-hot-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { graphqlRequest } from "@/app/lib/graphql-client";
+import { VitaminscardType } from "../types/Vitaminscard";
+import { useRouter } from "next/navigation";
 
-export default function EditMedscardPage() {
-  const { id } = useParams();
-  const router = useRouter();
-  const queryClient = useQueryClient();
-
-  const [form, setForm] = useState<MedscardType>({
+export default function VitaminscardForm() {
+  const [form, setForm] = useState<VitaminscardType>({
     cardName: "",
     cardDate: "",
     initialStock: "",
@@ -28,17 +24,20 @@ export default function EditMedscardPage() {
     balance: "",
   });
 
+  const router = useRouter();
+
   const [loading, setLoading] = useState(false);
 
-  // ================= FETCH SINGLE =================
-  const { data, isLoading } = useQuery({
-    queryKey: ["medscard", id],
-    queryFn: () =>
+  const queryClient = useQueryClient();
+
+  // ================= MUTATION =================
+  const createMutation = useMutation({
+    mutationFn: (input: VitaminscardType) =>
       graphqlRequest(
         `
-        query Medscard($id:ID!){
-          medscard(id:$id){
-            _id
+      mutation CreateVitaminscard($input:VitaminscardInput!){
+        createVitaminscard(input:$input){
+          _id
           cardName
           cardDate
           initialStock
@@ -49,77 +48,45 @@ export default function EditMedscardPage() {
           lotNoOut
           expiryOut
           balance
-          }
         }
+      }
       `,
-        { id },
-      ),
-    enabled: !!id,
-  });
-
-  // PREFILL FORM
-  useEffect(() => {
-    if (data?.medscard) {
-      setForm({
-        cardName: data.medscard.cardName,
-        cardDate: data.medscard.cardDate,
-        initialStock: data.medscard.initialStock,
-        qtyIn: data.medscard.qtyIn,
-        lotNoIn: data.medscard.lotNoIn,
-        expiryIn: data.medscard.expiryIn,
-        qtyOut: data.medscard.qtyOut,
-        lotNoOut: data.medscard.lotNoOut,
-        expiryOut: data.medscard.expiryOut,
-        balance: data.medscard.balance,
-      });
-    }
-  }, [data]);
-
-  // ================= UPDATE =================
-  const updateMutation = useMutation({
-    mutationFn: (input: MedscardType) =>
-      graphqlRequest(
-        `
-        mutation UpdateMedscard($id:ID!, $input:MedscardInput!){
-          updateMedscard(id:$id, input:$input){
-            _id
-          }
-        }
-      `,
-        { id, input },
+        { input },
       ),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["medscards"] });
-      queryClient.invalidateQueries({ queryKey: ["medscard", id] });
-
-      toast.success("Updated Successfully", {
+      queryClient.invalidateQueries({ queryKey: ["vitaminscards"] });
+      toast.success("New Vitamins Card Added Successfully", {
         duration: 3000,
         style: {
           padding: "4px",
           fontSize: "16px",
         },
       });
-      queryClient.setQueryData(["medscard", id], (old: any) => ({
-        ...old,
-        medscard: { ...old.medscard, ...form },
-      }));
-       router.push("/dashboard/medscard");
+      router.push("/dashboard/vitamins");
     },
 
     onError: (error: any) => {
-      const message = error.message || "Error updating meds card!";
+      const message = error.message || "Error creating vitamins card";
+
       toast.error(message, {
         duration: 10000,
         style: {
           padding: "4px",
           fontSize: "16px",
+          whiteSpace: "pre-line",
         },
       });
     },
   });
 
-  // ================= HANDLE CHANGE =================
+  // ================= HANDLE SUBMIT =================
+  const handleSubmit = (e: React.SubmitEvent) => {
+    e.preventDefault();
+
+    createMutation.mutate(form);
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -130,16 +97,8 @@ export default function EditMedscardPage() {
     }));
   };
 
-  const handleSubmit = (e: React.SubmitEvent) => {
-    e.preventDefault();
-
-    updateMutation.mutate(form);
-  };
-
-  if (isLoading) return <div className="p-6">Loading...</div>;
-
   return (
-    <div className="meds-form-div w-full pb-10">
+    <div className="vitamins-form-div w-full pb-10">
       <Banner />
       <div className="px-4 pt-7 pb-14 mx-auto bg-green-50 mt-8 w-9/12">
         <form
@@ -147,7 +106,7 @@ export default function EditMedscardPage() {
           className="w-9/12 mx-auto p-10 bg-white border rounded shadow mt-10"
         >
           <h2 className="font-bold text-xl sm:text-3xl mx-auto text-center mb-8">
-            EDIT MEDS CARD
+            ADD CARD RECORD
           </h2>
           <select
             name="cardName"
@@ -159,32 +118,18 @@ export default function EditMedscardPage() {
             <option value="" disabled>
               Select Card Name
             </option>
-            {medsCardList.map((m) => (
+            {vitaminsCardList.map((m) => (
               <option key={m} value={m}>
                 {m}
               </option>
             ))}
           </select>
           <label htmlFor="date">DATE:</label>
-          {/* <input
-            type="date"
-            name="cardDate"
-            value={form.cardDate.toISOString().split("T")[0]} // format to YYYY-MM-DD
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                cardDate: new Date(e.target.value), // parse back to Date
-              }))
-            }
-            // value={form.cardDate}
-            //onChange={handleChange}
-            required
-            className="border p-2 w-full"
-          /> */}
+
           <input
             type="date"
             name="cardDate"
-            value={form.cardDate.toString()}
+            value={form.cardDate}
             onChange={handleChange}
             required
             className="border p-2 w-full"
@@ -256,9 +201,6 @@ export default function EditMedscardPage() {
             <input
               type="date"
               name="expiryOut"
-              // value={
-              //   form.expiryOut ? form.expiryOut.toISOString().split("T")[0] : ""
-              // }
               value={form.expiryOut ? form.expiryOut.toString() : ""}
               onChange={handleChange}
               className="border p-2 w-full"
@@ -278,12 +220,12 @@ export default function EditMedscardPage() {
             type="submit"
             className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-800 cursor-pointer mr-6"
           >
-            {updateMutation.isPending ? "Updating Card..." : "Update Card"}
+            {createMutation.isPending ? "Saving Card..." : "Save Card"}
           </button>
           <Link
-            href={"/dashboard/medscard"}
-            onClick={() => setLoading(true)}
+            href={"/dashboard/vitamins"}
             className="back-btn mt-4 bg-green-500 text-white px-4 py-3 rounded hover:bg-green-700 cursor-pointer"
+            onClick={() => setLoading(true)}
           >
             {loading ? "Going Back..." : "Go Back"}
           </Link>

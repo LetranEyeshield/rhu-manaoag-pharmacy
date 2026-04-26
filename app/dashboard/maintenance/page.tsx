@@ -1,6 +1,16 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  ColumnDef,
+  getSortedRowModel,
+  SortingState,
+} from "@tanstack/react-table";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "@/app/lib/graphql-client";
 import Link from "next/link";
@@ -9,11 +19,26 @@ import { maintenanceCardList } from "@/app/constants/lists";
 import Banner from "@/app/components/Banner";
 import LogoutButton from "@/app/components/Logout";
 
-export default function Maintenancecards() {
+type MaintenancecardType = {
+  _id: string;
+  cardName: string;
+  cardDate: string;
+  initialStock: number;
+  qtyIn: number;
+  lotNoIn: string;
+  expiryIn: string;
+  qtyOut: number;
+  lotNoOut: string;
+  expiryOut: string;
+  balance: number;
+};
+
+export default function MaintenancecardsTable() {
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const formatDate = (date: string | null | undefined) => {
     if (!date) return "No date input";
@@ -23,7 +48,7 @@ export default function Maintenancecards() {
 
     return d.toLocaleDateString("en-US", {
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
     });
   };
@@ -63,6 +88,7 @@ export default function Maintenancecards() {
   const maintenancecards = data?.maintenancecards?.maintenancecards ?? [];
   const totalPages = data?.maintenancecards?.totalPages ?? 1;
 
+  // 🔥 DELETE
   const deleteMutation = useMutation({
     mutationFn: (id: string) =>
       graphqlRequest(
@@ -109,7 +135,7 @@ export default function Maintenancecards() {
     },
 
     onSuccess: () => {
-      toast.success("Maintenance Card deleted successfully");
+      toast.success("Deleted successfully");
     },
 
     onSettled: () => {
@@ -117,11 +143,88 @@ export default function Maintenancecards() {
     },
   });
 
-  const handleDelete = (maintenancecard: any) => {
-    if (window.confirm("Are you sure you want to delete this card?")) {
-      deleteMutation.mutate(maintenancecard._id);
+  const handleDelete = (id: string) => {
+    if (window.confirm("Delete this card?")) {
+      deleteMutation.mutate(id);
     }
   };
+
+  // 🧠 TABLE COLUMNS
+  const columns = useMemo<ColumnDef<MaintenancecardType>[]>(
+    () => [
+      {
+        accessorKey: "cardName",
+        header: "Card Name",
+      },
+      {
+        accessorKey: "cardDate",
+        header: "Card Date",
+        cell: ({ row }) => formatDate(row.original.cardDate),
+      },
+      {
+        accessorKey: "initialStock",
+        header: "Initial Stock",
+      },
+      {
+        accessorKey: "qtyIn",
+        header: "Qty In",
+      },
+       {
+        accessorKey: "lotNoIn",
+        header: "Lot No In",
+      },
+       {
+        accessorKey: "expirtyIn",
+        header: "Expiry In",
+      },
+      {
+        accessorKey: "qtyOut",
+        header: "Qty Out",
+      },
+      {
+        accessorKey: "lotNoOut",
+        header: "Lot No Out",
+      },
+       {
+        accessorKey: "expirtyOut",
+        header: "Expiry Out",
+      },
+      {
+        accessorKey: "balance",
+        header: "Balance",
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => (
+          <div className="flex gap-2">
+            <Link
+              href={`/maintenancecard/${row.original._id}`}
+              className="bg-blue-500 text-white px-2 py-1 rounded"
+            >
+              Edit
+            </Link>
+            <button
+              onClick={() => handleDelete(row.original._id)}
+              className="bg-red-500 text-white px-2 py-1 rounded"
+            >
+              Delete
+            </button>
+          </div>
+        ),
+      },
+    ],
+    [],
+  );
+
+  const table = useReactTable({
+    data: maintenancecards,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
 
   return (
     <div className="w-full">
@@ -142,13 +245,13 @@ export default function Maintenancecards() {
         </Link>
         <Link
           href={"/dashboard/medscard"}
-          className="reports-btn bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 mr-8"
+          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 mr-8"
         >
           Meds Card
         </Link>
         <Link
           href={"/dashboard/vitamins"}
-          className="reports-btn bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 mr-8"
+          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 mr-8"
         >
           Vitamins Card
         </Link>
@@ -161,101 +264,117 @@ export default function Maintenancecards() {
         <LogoutButton />
       </div>
 
-      <div className="wrapper bg-green-50 w-9/12 mx-auto">
-        <div className="p-6 w-11/12 mx-auto pl-10">
-          <h1 className="text-3xl font-bold text-center mb-10">Maintenance Cards</h1>
+      <div className="w-11/12 mx-auto bg-green-50 p-10">
+        <h1 className="text-4xl text-center font-bold mb-6">Maintenance Cards</h1>
 
-          {/* FILTER */}
-          <select
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="border p-2 mb-6 bg-white"
+        {/* FILTER */}
+        <select
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+          className="border p-2 mb-4"
+        >
+          <option value="">All</option>
+          {maintenanceCardList.map((name) => (
+            <option key={name}>{name}</option>
+          ))}
+        </select>
+
+        {/* TABLE */}
+        <div className="overflow-x-auto">
+          <table className="w-full border">
+            <thead className="bg-green-100">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      className="p-2 border cursor-pointer"
+                      onClick={header.column.getToggleSortingHandler()}
+                    >
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+
+            <tbody>
+              {isLoading && (
+                <tr>
+                  <td colSpan={10} className="text-center p-4">
+                    Loading...
+                  </td>
+                </tr>
+              )}
+
+              {!isLoading &&
+                table.getRowModel().rows.map((row) => (
+                  <tr key={row.id} className="hover:bg-gray-50">
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="p-2 border">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+
+              {!isLoading && maintenancecards.length === 0 && (
+                <tr>
+                  <td colSpan={10} className="text-center p-4">
+                    No data found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* PAGINATION */}
+        <div className="flex justify-center gap-2 mt-6">
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-80 disabled:cursor-not-allowed"
+            disabled={page === 1}
+            onClick={() => setPage(1)}
           >
-            <option value="">All Cards</option>
-            {maintenanceCardList.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
+            First
+          </button>
 
-          {/* LIST */}
-          <div className="grid grid-cols-1 gap-6">
-            {isLoading && <p>Loading...</p>}
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-80 disabled:cursor-not-allowed"
+            disabled={page === 1}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            Prev
+          </button>
 
-            {!isLoading && maintenancecards.length === 0 && (
-              <p className="text-gray-500">No Maintenance Card found</p>
-            )}
+          <span>
+            Page {page} / {totalPages}
+          </span>
 
-            {maintenancecards.map((maintenancecard: any) => (
-              <div
-                key={maintenancecard._id}
-                className="bg-white rounded-2xl shadow-lg p-6"
-              >
-                <h2 className="text-xl font-bold text-green-500">
-                  {maintenancecard.cardName}
-                </h2>
+          <button
+            disabled={page === totalPages}
+            className="px-3 py-1 border rounded disabled:opacity-80 disabled:cursor-not-allowed"
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Next
+          </button>
 
-                {/* ✅ FIXED DATE */}
-                <p className="mt-2 text-gray-600">
-                  <span className="font-semibold">Card Date:</span>{" "}
-                  {formatDate(maintenancecard.cardDate)}
-                </p>
-
-                <p className="mt-2">Initial Stock: {maintenancecard.initialStock}</p>
-                <p>Qty In: {maintenancecard.qtyIn}</p>
-                <p>Lot No In: {maintenancecard.lotNoIn}</p>
-                <p>Expiry In: {formatDate(maintenancecard.expiryIn)}</p>
-                <p>Qty Out: {maintenancecard.qtyOut}</p>
-                <p>Lot No Out: {maintenancecard.lotNoOut}</p>
-                <p>Expiry Out: {formatDate(maintenancecard.expiryOut)}</p>
-                <p>Balance: {maintenancecard.balance}</p>
-
-                <div className="mt-5 flex gap-2">
-                  <Link
-                    href={`/maintenance/${maintenancecard._id}`}
-                    className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-700"
-                  >
-                    Edit
-                  </Link>
-
-                  <button
-                    onClick={() => handleDelete(maintenancecard)}
-                    className="bg-red-500 text-white px-3 py-2 rounded cursor-pointer hover:bg-red-700"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* PAGINATION */}
-          <div className="flex justify-center gap-2 mt-6">
-            <button disabled={page === 1} onClick={() => setPage(1)}>
-              First
-            </button>
-
-            <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
-              Prev
-            </button>
-
-            <span>
-              Page {page} / {totalPages}
-            </span>
-
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Next
-            </button>
-
-            <button onClick={() => setPage(totalPages)}>Last</button>
-          </div>
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-80 disabled:cursor-not-allowed"
+            disabled={page === totalPages}
+            onClick={() => setPage(totalPages)}
+          >
+            Last
+          </button>
         </div>
       </div>
     </div>

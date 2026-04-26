@@ -5,17 +5,17 @@ import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { graphqlRequest } from "@/app/lib/graphql-client";
 import toast from "react-hot-toast";
-import { MedscardType } from "@/app/types/Medscard";
+import { MaintenancecardType } from "@/app/types/Maintenancecard";
 import Banner from "@/app/components/Banner";
 import Link from "next/link";
-import { medsCardList } from "@/app/constants/lists";
+import { maintenanceCardList } from "@/app/constants/lists";
 
-export default function EditMedscardPage() {
+export default function EditMaintenancecardPage() {
   const { id } = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const [form, setForm] = useState<MedscardType>({
+  const [form, setForm] = useState<MaintenancecardType>({
     cardName: "",
     cardDate: "",
     initialStock: "",
@@ -32,12 +32,12 @@ export default function EditMedscardPage() {
 
   // ================= FETCH SINGLE =================
   const { data, isLoading } = useQuery({
-    queryKey: ["medscard", id],
+    queryKey: ["maintenancecard", id],
     queryFn: () =>
       graphqlRequest(
         `
-        query Medscard($id:ID!){
-          medscard(id:$id){
+        query Maintenancecard($id:ID!){
+          maintenancecard(id:$id){
             _id
           cardName
           cardDate
@@ -59,29 +59,29 @@ export default function EditMedscardPage() {
 
   // PREFILL FORM
   useEffect(() => {
-    if (data?.medscard) {
+    if (data?.maintenancecard) {
       setForm({
-        cardName: data.medscard.cardName,
-        cardDate: data.medscard.cardDate,
-        initialStock: data.medscard.initialStock,
-        qtyIn: data.medscard.qtyIn,
-        lotNoIn: data.medscard.lotNoIn,
-        expiryIn: data.medscard.expiryIn,
-        qtyOut: data.medscard.qtyOut,
-        lotNoOut: data.medscard.lotNoOut,
-        expiryOut: data.medscard.expiryOut,
-        balance: data.medscard.balance,
+        cardName: data.maintenancecard.cardName,
+        cardDate: data.maintenancecard.cardDate,
+        initialStock: data.maintenancecard.initialStock,
+        qtyIn: data.maintenancecard.qtyIn,
+        lotNoIn: data.maintenancecard.lotNoIn,
+        expiryIn: data.maintenancecard.expiryIn,
+        qtyOut: data.maintenancecard.qtyOut,
+        lotNoOut: data.maintenancecard.lotNoOut,
+        expiryOut: data.maintenancecard.expiryOut,
+        balance: data.maintenancecard.balance,
       });
     }
   }, [data]);
 
   // ================= UPDATE =================
   const updateMutation = useMutation({
-    mutationFn: (input: MedscardType) =>
+    mutationFn: (input: MaintenancecardType) =>
       graphqlRequest(
         `
-        mutation UpdateMedscard($id:ID!, $input:MedscardInput!){
-          updateMedscard(id:$id, input:$input){
+        mutation UpdateMaintenancecard($id:ID!, $input:MaintenancecardInput!){
+          updateMaintenancecard(id:$id, input:$input){
             _id
           }
         }
@@ -90,8 +90,8 @@ export default function EditMedscardPage() {
       ),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["medscards"] });
-      queryClient.invalidateQueries({ queryKey: ["medscard", id] });
+      queryClient.invalidateQueries({ queryKey: ["maintenancecards"] });
+      queryClient.invalidateQueries({ queryKey: ["maintenancecard", id] });
 
       toast.success("Updated Successfully", {
         duration: 3000,
@@ -100,15 +100,15 @@ export default function EditMedscardPage() {
           fontSize: "16px",
         },
       });
-      queryClient.setQueryData(["medscard", id], (old: any) => ({
+      queryClient.setQueryData(["maintenancecard", id], (old: any) => ({
         ...old,
-        medscard: { ...old.medscard, ...form },
+        maintenancecard: { ...old.maintenancecard, ...form },
       }));
-       router.push("/dashboard/medscard");
+      router.push("/dashboard/maintenance");
     },
 
     onError: (error: any) => {
-      const message = error.message || "Error updating meds card!";
+      const message = error.message || "Error updating maintenance card!";
       toast.error(message, {
         duration: 10000,
         style: {
@@ -139,7 +139,7 @@ export default function EditMedscardPage() {
   if (isLoading) return <div className="p-6">Loading...</div>;
 
   return (
-    <div className="meds-form-div w-full pb-10">
+    <div className="maintenance-form-div w-full pb-10">
       <Banner />
       <div className="px-4 pt-7 pb-14 mx-auto bg-green-50 mt-8 w-9/12">
         <form
@@ -147,7 +147,7 @@ export default function EditMedscardPage() {
           className="w-9/12 mx-auto p-10 bg-white border rounded shadow mt-10"
         >
           <h2 className="font-bold text-xl sm:text-3xl mx-auto text-center mb-8">
-            EDIT MEDS CARD
+            EDIT MAINTENANCE CARD
           </h2>
           <select
             name="cardName"
@@ -159,28 +159,13 @@ export default function EditMedscardPage() {
             <option value="" disabled>
               Select Card Name
             </option>
-            {medsCardList.map((m) => (
+            {maintenanceCardList.map((m) => (
               <option key={m} value={m}>
                 {m}
               </option>
             ))}
           </select>
           <label htmlFor="date">DATE:</label>
-          {/* <input
-            type="date"
-            name="cardDate"
-            value={form.cardDate.toISOString().split("T")[0]} // format to YYYY-MM-DD
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                cardDate: new Date(e.target.value), // parse back to Date
-              }))
-            }
-            // value={form.cardDate}
-            //onChange={handleChange}
-            required
-            className="border p-2 w-full"
-          /> */}
           <input
             type="date"
             name="cardDate"
@@ -256,9 +241,6 @@ export default function EditMedscardPage() {
             <input
               type="date"
               name="expiryOut"
-              // value={
-              //   form.expiryOut ? form.expiryOut.toISOString().split("T")[0] : ""
-              // }
               value={form.expiryOut ? form.expiryOut.toString() : ""}
               onChange={handleChange}
               className="border p-2 w-full"
@@ -281,7 +263,7 @@ export default function EditMedscardPage() {
             {updateMutation.isPending ? "Updating Card..." : "Update Card"}
           </button>
           <Link
-            href={"/dashboard/medscard"}
+            href={"/dashboard/maintenance"}
             onClick={() => setLoading(true)}
             className="back-btn mt-4 bg-green-500 text-white px-4 py-3 rounded hover:bg-green-700 cursor-pointer"
           >

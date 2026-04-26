@@ -1,4 +1,4 @@
-export type MaintenanceType = {
+export type MaintenancecardType = {
   cardName: string;
   cardDate: string;
   initialStock?: string;

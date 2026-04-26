@@ -98,7 +98,7 @@ export default function MedscardForm() {
   };
 
   return (
-    <div className="patient-form-div w-full pb-10">
+    <div className="medscard-form-div w-full pb-10">
       <Banner />
       <div className="px-4 pt-7 pb-14 mx-auto bg-green-50 mt-8 w-9/12">
         <form
