@@ -2,7 +2,7 @@ import { connectDB } from "@/app/lib/mongodb";
 import { PatientValidator } from "@/app/lib/validators/patient";
 import { Patient } from "@/app/models/Patient";
 //import { sanitizeInput } from "@/app/lib/sanitizer/sanitize";
-import { sanitizeObject } from "@/app/lib/sanitizer/sanitize";
+import { sanitizeObject } from "@/app/sanitizer/sanitize";
 import { ZodError } from "zod";
 import { GraphQLError } from "graphql";
 
