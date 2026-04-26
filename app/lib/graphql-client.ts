@@ -29,27 +29,27 @@
 import axios from "axios";
 
 export const graphqlRequest = async (query: string, variables?: any) => {
-  // const res = await axios.post(
-  //   "/api/graphql",
-  //   {
-  //     query,
-  //     variables,
-  //   },
-  //   {
-  //     withCredentials: true,
-  //   }
-  // );
-
   const res = await axios.post(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/graphql`,
+    "/api/graphql",
     {
       query,
       variables,
     },
     {
       withCredentials: true,
-    },
+    }
   );
+
+  // const res = await axios.post(
+  //   `${process.env.NEXT_PUBLIC_BASE_URL}/api/graphql`,
+  //   {
+  //     query,
+  //     variables,
+  //   },
+  //   {
+  //     withCredentials: true,
+  //   },
+  // );
 
   // 🔥 IMPORTANT: handle GraphQL errors properly
   // if (res.data.errors && res.data.errors.length > 0) {

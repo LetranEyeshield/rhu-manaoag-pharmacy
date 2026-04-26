@@ -69,14 +69,14 @@ export const patientResolvers = {
       const totalCount = await Patient.countDocuments(filter);
 
       return {
-        // patients,
+        // patientsData,
         patients: patientsData.map((p) => ({
           ...p.toObject(),
-          // birthday: p.birthday ? new Date(p.birthday).toISOString() : null,
-          // birthday: p.birthday
-          //   ? new Date(p.birthday).toISOString().split("T")[0]
-          //   : null,
-          birthday: safeDate(p.birthday),
+        //   birthday: p.birthday ? new Date(p.birthday).toISOString() : null,
+        //   birthday: p.birthday
+        //     ? new Date(p.birthday).toISOString().split("T")[0]
+        //     : null,
+         birthday: safeDate(p?.birthday),
         })),
         totalCount,
         totalPages: Math.ceil(totalCount / limit),
@@ -99,7 +99,7 @@ export const patientResolvers = {
         // birthday: p.birthday
         //   ? new Date(p.birthday).toISOString().split("T")[0]
         //   : null,
-        birthday: safeDate(p.birthday),
+        birthday: safeDate(p?.birthday),
       };
     },
   },
