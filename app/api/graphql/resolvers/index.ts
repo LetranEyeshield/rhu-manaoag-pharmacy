@@ -6,14 +6,14 @@ import { vitaminscardResolvers } from "./vitaminscard";
 export const resolvers = {
   Query: {
     ...patientResolvers.Query,
-    ...medscardResolvers.Query,
-    ...maintenancecardResolvers.Query,
-    ...vitaminscardResolvers.Query,
+    // ...medscardResolvers.Query,
+    // ...maintenancecardResolvers.Query,
+    // ...vitaminscardResolvers.Query,
   },
   Mutation: {
     ...patientResolvers.Mutation,
-    ...medscardResolvers.Mutation,
-    ...maintenancecardResolvers.Mutation,
-    ...vitaminscardResolvers.Mutation,
+    // ...medscardResolvers.Mutation,
+    // ...maintenancecardResolvers.Mutation,
+    // ...vitaminscardResolvers.Mutation,
   },
 };
