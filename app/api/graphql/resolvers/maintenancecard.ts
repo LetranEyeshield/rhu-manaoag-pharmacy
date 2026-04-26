@@ -1,3 +1,4 @@
+import { safeDate } from "@/app/helper/safeDate";
 import { connectDB } from "@/app/lib/mongodb";
 import { Maintenancecard } from "@/app/models/Maintenancecard";
 import { GraphQLError } from "graphql";
@@ -24,7 +25,8 @@ export const maintenancecardResolvers = {
         // maintenancecards,
          maintenancecards: maintenancecardsData.map((p) => ({
           ...p.toObject(),
-          cardDate: new Date(p.cardDate).toISOString().split("T")[0],
+          // cardDate: new Date(p.cardDate).toISOString().split("T")[0],
+          cardDate: safeDate(p.cardDate),
         })),
         totalCount,
         totalPages: Math.ceil(totalCount / limit),
@@ -40,7 +42,8 @@ export const maintenancecardResolvers = {
    
          return {
            ...p.toObject(),
-          cardDate: new Date(p.cardDate).toISOString().split("T")[0],
+          // cardDate: new Date(p.cardDate).toISOString().split("T")[0],
+          cardDate: safeDate(p.cardDate),
          };
        },
   },

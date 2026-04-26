@@ -2,6 +2,7 @@ import { connectDB } from "@/app/lib/mongodb";
 import { Medscard } from "@/app/models/Medscard";
 import { GraphQLError } from "graphql";
 import { ZodError } from "zod";
+import { safeDate } from "@/app/helper/safeDate";
 
 export const medscardResolvers = {
   Query: {
@@ -32,7 +33,8 @@ export const medscardResolvers = {
         // medscards,
          medscards: medscardsData.map((p) => ({
           ...p.toObject(),
-          cardDate: new Date(p.cardDate).toISOString().split("T")[0],
+          // cardDate: new Date(p.cardDate).toISOString().split("T")[0],
+          cardDate: safeDate(p.cardDate),
         })),
         totalCount,
         totalPages: Math.ceil(totalCount / limit),
@@ -48,7 +50,8 @@ export const medscardResolvers = {
    
          return {
            ...p.toObject(),
-          cardDate: new Date(p.cardDate).toISOString().split("T")[0],
+          // cardDate: new Date(p.cardDate).toISOString().split("T")[0],
+          cardDate: safeDate(p.cardDate),
          };
        },
   },

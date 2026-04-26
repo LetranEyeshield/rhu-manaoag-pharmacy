@@ -5,6 +5,7 @@ import { Patient } from "@/app/models/Patient";
 import { sanitizeObject } from "@/app/sanitizer/sanitize";
 import { ZodError } from "zod";
 import { GraphQLError } from "graphql";
+import { safeDate } from "@/app/helper/safeDate";
 
 type GraphQLContext = {
   user: any;
@@ -72,9 +73,10 @@ export const patientResolvers = {
         patients: patientsData.map((p) => ({
           ...p.toObject(),
           // birthday: p.birthday ? new Date(p.birthday).toISOString() : null,
-          birthday: p.birthday
-            ? new Date(p.birthday).toISOString().split("T")[0]
-            : null,
+          // birthday: p.birthday
+          //   ? new Date(p.birthday).toISOString().split("T")[0]
+          //   : null,
+          birthday: safeDate(p.birthday),
         })),
         totalCount,
         totalPages: Math.ceil(totalCount / limit),
@@ -94,9 +96,10 @@ export const patientResolvers = {
 
       return {
         ...p.toObject(),
-        birthday: p.birthday
-          ? new Date(p.birthday).toISOString().split("T")[0]
-          : null,
+        // birthday: p.birthday
+        //   ? new Date(p.birthday).toISOString().split("T")[0]
+        //   : null,
+        birthday: safeDate(p.birthday),
       };
     },
   },
@@ -280,9 +283,9 @@ export const patientResolvers = {
     },
 
     deletePatient: async (_: any, { id }: any, ctx: any) => {
-      if (!ctx.user) {
-        throw new Error("Unauthorized");
-      }
+      // if (!ctx.user) {
+      //   throw new Error("Unauthorized");
+      // }
       try {
         await connectDB();
 
