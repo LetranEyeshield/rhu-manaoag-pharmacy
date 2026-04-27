@@ -1,8 +1,14 @@
 import { safeDate } from "@/app/helper/safeDate";
 import { connectDB } from "@/app/lib/mongodb";
+import { cardsValidator } from "@/app/lib/validators/cardsValidator";
 import { Maintenancecard } from "@/app/models/Maintenancecard";
+import { sanitizeObject } from "@/app/sanitizer/sanitize";
 import { GraphQLError } from "graphql";
 import { ZodError } from "zod";
+
+type GraphQLContext = {
+  user: any;
+};
 
 export const maintenancecardResolvers = {
   Query: {
@@ -10,7 +16,6 @@ export const maintenancecardResolvers = {
       await connectDB();
 
       const skip = (page - 1) * limit;
-
 
       const filter = search ? { cardName: search } : {};
 
@@ -23,7 +28,7 @@ export const maintenancecardResolvers = {
 
       return {
         // maintenancecards,
-         maintenancecards: maintenancecardsData.map((p) => ({
+        maintenancecards: maintenancecardsData.map((p) => ({
           ...p.toObject(),
           // cardDate: new Date(p.cardDate).toISOString().split("T")[0],
           cardDate: safeDate(p.cardDate),
@@ -34,29 +39,43 @@ export const maintenancecardResolvers = {
     },
 
     maintenancecard: async (_: any, { id }: any) => {
-         await connectDB();
-   
-         const p = await Maintenancecard.findById(id);
-   
-         if (!p) return null;
-   
-         return {
-           ...p.toObject(),
-          // cardDate: new Date(p.cardDate).toISOString().split("T")[0],
-          cardDate: safeDate(p.cardDate),
-         };
-       },
+      await connectDB();
+
+      const p = await Maintenancecard.findById(id);
+
+      if (!p) return null;
+
+      return {
+        ...p.toObject(),
+        // cardDate: new Date(p.cardDate).toISOString().split("T")[0],
+        cardDate: safeDate(p.cardDate),
+      };
+    },
   },
 
-
   Mutation: {
-    createMaintenancecard: async (_: any, { input }: any) => {
+    createMaintenancecard: async (
+      _: any,
+      { input }: any,
+      ctx: GraphQLContext,
+    ) => {
+      if (!ctx.user) {
+        throw new GraphQLError("Unauthorized", {
+          extensions: { code: "UNAUTHORIZED" },
+        });
+      }
       try {
         await connectDB();
 
-        const newMaintenancecard = await Maintenancecard.create({
-          ...input,
-        });
+        const validatedData = cardsValidator.parse(input);
+
+        const sanitizedData = sanitizeObject(validatedData);
+
+        // const newMaintenancecard = await Maintenancecard.create({
+        //   ...input,
+        // });
+
+        const newMaintenancecard = await Maintenancecard.create(sanitizedData);
 
         return newMaintenancecard;
       } catch (error: any) {
@@ -79,13 +98,36 @@ export const maintenancecardResolvers = {
       }
     },
 
-    updateMaintenancecard: async (_: any, { id, input }: any) => {
+    updateMaintenancecard: async (
+      _: any,
+      { id, input }: any,
+      ctx: GraphQLContext,
+    ) => {
+      if (!ctx.user) {
+        throw new GraphQLError("Unauthorized", {
+          extensions: { code: "UNAUTHORIZED" },
+        });
+      }
       try {
         await connectDB();
 
-        const updatedMaintenancecard = await Maintenancecard.findByIdAndUpdate(id, input, {
-          new: true,
-        });
+        const PartialCardValidator = cardsValidator.partial();
+
+        const validatedData = PartialCardValidator.parse(input);
+
+        const sanitizedData = sanitizeObject(validatedData);
+
+        // const updatedMaintenancecard = await Maintenancecard.findByIdAndUpdate(id, input, {
+        //   new: true,
+        // });
+
+        const updatedMaintenancecard = await Maintenancecard.findByIdAndUpdate(
+          id,
+          sanitizedData,
+          {
+            new: true,
+          },
+        );
 
         if (!updatedMaintenancecard) {
           throw new Error("Maintenance Card not found");
@@ -112,7 +154,10 @@ export const maintenancecardResolvers = {
       }
     },
 
-    deleteMaintenancecard: async (_: any, { id }: any) => {
+    deleteMaintenancecard: async (_: any, { id }: any, ctx: any) => {
+      if (!ctx.user) {
+        throw new Error("Unauthorized");
+      }
       try {
         await connectDB();
 
@@ -125,7 +170,9 @@ export const maintenancecardResolvers = {
         return true;
       } catch (error: any) {
         console.error("DELETE MAINTENANCE CARD ERROR:", error);
-        throw new Error(error.message || "Server error while deleting maintenance card");
+        throw new Error(
+          error.message || "Server error while deleting maintenance card",
+        );
       }
     },
   },

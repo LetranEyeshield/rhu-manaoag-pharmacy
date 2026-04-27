@@ -3,6 +3,12 @@ import { Medscard } from "@/app/models/Medscard";
 import { GraphQLError } from "graphql";
 import { ZodError } from "zod";
 import { safeDate } from "@/app/helper/safeDate";
+import { cardsValidator } from "@/app/lib/validators/cardsValidator";
+import { sanitizeObject } from "@/app/sanitizer/sanitize";
+
+type GraphQLContext = {
+  user: any;
+};
 
 export const medscardResolvers = {
   Query: {
@@ -31,7 +37,7 @@ export const medscardResolvers = {
 
       return {
         // medscards,
-         medscards: medscardsData.map((p) => ({
+        medscards: medscardsData.map((p) => ({
           ...p.toObject(),
           // cardDate: new Date(p.cardDate).toISOString().split("T")[0],
           cardDate: safeDate(p.cardDate),
@@ -42,29 +48,39 @@ export const medscardResolvers = {
     },
 
     medscard: async (_: any, { id }: any) => {
-         await connectDB();
-   
-         const p = await Medscard.findById(id);
-   
-         if (!p) return null;
-   
-         return {
-           ...p.toObject(),
-          // cardDate: new Date(p.cardDate).toISOString().split("T")[0],
-          cardDate: safeDate(p.cardDate),
-         };
-       },
+      await connectDB();
+
+      const p = await Medscard.findById(id);
+
+      if (!p) return null;
+
+      return {
+        ...p.toObject(),
+        // cardDate: new Date(p.cardDate).toISOString().split("T")[0],
+        cardDate: safeDate(p.cardDate),
+      };
+    },
   },
 
-
   Mutation: {
-    createMedscard: async (_: any, { input }: any) => {
+    createMedscard: async (_: any, { input }: any, ctx: GraphQLContext) => {
+      if (!ctx.user) {
+        throw new GraphQLError("Unauthorized", {
+          extensions: { code: "UNAUTHORIZED" },
+        });
+      }
       try {
         await connectDB();
 
-        const newMedscard = await Medscard.create({
-          ...input,
-        });
+        const validatedData = cardsValidator.parse(input);
+
+        const sanitizedData = sanitizeObject(validatedData);
+
+        // const newMedscard = await Medscard.create({
+        //   ...input,
+        // });
+
+        const newMedscard = await Medscard.create(sanitizedData);
 
         return newMedscard;
       } catch (error: any) {
@@ -87,13 +103,32 @@ export const medscardResolvers = {
       }
     },
 
-    updateMedscard: async (_: any, { id, input }: any) => {
+    updateMedscard: async (_: any, { id, input }: any, ctx: GraphQLContext) => {
+      if (!ctx.user) {
+        throw new GraphQLError("Unauthorized", {
+          extensions: { code: "UNAUTHORIZED" },
+        });
+      }
       try {
         await connectDB();
 
-        const updatedMedscard = await Medscard.findByIdAndUpdate(id, input, {
-          new: true,
-        });
+        const PartialCardValidator = cardsValidator.partial();
+
+        const validatedData = PartialCardValidator.parse(input);
+
+        const sanitizedData = sanitizeObject(validatedData);
+
+        const updatedMedscard = await Medscard.findByIdAndUpdate(
+          id,
+          sanitizedData,
+          {
+            new: true,
+          },
+        );
+
+        // const updatedMedscard = await Medscard.findByIdAndUpdate(id, input, {
+        //   new: true,
+        // });
 
         if (!updatedMedscard) {
           throw new Error("Meds Card not found");
@@ -120,7 +155,10 @@ export const medscardResolvers = {
       }
     },
 
-    deleteMedscard: async (_: any, { id }: any) => {
+    deleteMedscard: async (_: any, { id }: any, ctx: any) => {
+      if (!ctx.user) {
+        throw new Error("Unauthorized");
+      }
       try {
         await connectDB();
 
@@ -133,7 +171,9 @@ export const medscardResolvers = {
         return true;
       } catch (error: any) {
         console.error("DELETE MEDS CARD ERROR:", error);
-        throw new Error(error.message || "Server error while deleting meds card");
+        throw new Error(
+          error.message || "Server error while deleting meds card",
+        );
       }
     },
   },

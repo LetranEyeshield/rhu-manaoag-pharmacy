@@ -4,13 +4,16 @@ import { GraphQLError } from "graphql";
 import { ZodError } from "zod";
 import { safeDate } from "@/app/helper/safeDate";
 
+type GraphQLContext = {
+  user: any;
+};
+
 export const vitaminscardResolvers = {
   Query: {
     vitaminscards: async (_: any, { page, limit, search }: any) => {
       await connectDB();
 
       const skip = (page - 1) * limit;
-
 
       const filter = search ? { cardName: search } : {};
 
@@ -23,7 +26,7 @@ export const vitaminscardResolvers = {
 
       return {
         // vitaminscards,
-         vitaminscards: vitaminscardsData.map((p) => ({
+        vitaminscards: vitaminscardsData.map((p) => ({
           ...p.toObject(),
           // cardDate: new Date(p.cardDate).toISOString().split("T")[0],
           cardDate: safeDate(p.cardDate),
@@ -34,29 +37,40 @@ export const vitaminscardResolvers = {
     },
 
     vitaminscard: async (_: any, { id }: any) => {
-         await connectDB();
-   
-         const p = await Vitaminscard.findById(id);
-   
-         if (!p) return null;
-   
-         return {
-           ...p.toObject(),
-          // cardDate: new Date(p.cardDate).toISOString().split("T")[0],
-          cardDate: safeDate(p.cardDate),
-         };
-       },
+      await connectDB();
+
+      const p = await Vitaminscard.findById(id);
+
+      if (!p) return null;
+
+      return {
+        ...p.toObject(),
+        // cardDate: new Date(p.cardDate).toISOString().split("T")[0],
+        cardDate: safeDate(p.cardDate),
+      };
+    },
   },
 
-
   Mutation: {
-    createVitaminscard: async (_: any, { input }: any) => {
+    createVitaminscard: async (_: any, { input }: any, ctx: GraphQLContext) => {
+      if (!ctx.user) {
+        throw new GraphQLError("Unauthorized", {
+          extensions: { code: "UNAUTHORIZED" },
+        });
+      }
+
       try {
         await connectDB();
 
-        const newVitaminscard = await Vitaminscard.create({
-          ...input,
-        });
+        const validatedData = cardsValidator.parse(input);
+
+        const sanitizedData = sanitizeObject(validatedData);
+
+        const newVitaminscard = await Vitaminscard.create(sanitizedData);
+
+        // const newVitaminscard = await Vitaminscard.create({
+        //   ...input,
+        // });
 
         return newVitaminscard;
       } catch (error: any) {
@@ -79,13 +93,37 @@ export const vitaminscardResolvers = {
       }
     },
 
-    updateVitaminscard: async (_: any, { id, input }: any) => {
+    updateVitaminscard: async (
+      _: any,
+      { id, input }: any,
+      ctx: GraphQLContext,
+    ) => {
+      if (!ctx.user) {
+        throw new GraphQLError("Unauthorized", {
+          extensions: { code: "UNAUTHORIZED" },
+        });
+      }
+
       try {
         await connectDB();
 
-        const updatedVitaminscard = await Vitaminscard.findByIdAndUpdate(id, input, {
-          new: true,
-        });
+        const PartialCardValidator = cardsValidator.partial();
+
+        const validatedData = PartialCardValidator.parse(input);
+
+        const sanitizedData = sanitizeObject(validatedData);
+
+        const updatedVitaminscard = await Vitaminscard.findByIdAndUpdate(
+          id,
+          sanitizedData,
+          {
+            new: true,
+          },
+        );
+
+        // const updatedVitaminscard = await Vitaminscard.findByIdAndUpdate(id, input, {
+        //   new: true,
+        // });
 
         if (!updatedVitaminscard) {
           throw new Error("Vitamins Card not found");
@@ -112,7 +150,10 @@ export const vitaminscardResolvers = {
       }
     },
 
-    deleteVitaminscard: async (_: any, { id }: any) => {
+    deleteVitaminscard: async (_: any, { id }: any, ctx: any) => {
+      if (!ctx.user) {
+        throw new Error("Unauthorized");
+      }
       try {
         await connectDB();
 
@@ -125,7 +166,9 @@ export const vitaminscardResolvers = {
         return true;
       } catch (error: any) {
         console.error("DELETE VITAMINS CARD ERROR:", error);
-        throw new Error(error.message || "Server error while deleting vitamins card");
+        throw new Error(
+          error.message || "Server error while deleting vitamins card",
+        );
       }
     },
   },

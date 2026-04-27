@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const MedscardValidator = z
+export const cardsValidator = z
   .object({
     cardName: z.string().min(1, "Please Select Card Name"),
     cardDate: z.string().min(1, "Please Select Card Date"),
